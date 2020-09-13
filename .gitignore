@@ -1,0 +1,4 @@
+*.ipynb
+*.pth
+
+__pycache__/

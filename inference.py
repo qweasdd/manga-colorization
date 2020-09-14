@@ -132,7 +132,7 @@ if __name__ == "__main__":
         colorize_images(args.path, colorization_path, sketcher, colorizer, args.autohint, args.sigma, device = device)
     elif os.path.isfile(args.path):
         split = os.path.splitext(args.path)
-        if split[1].lower() in ('.cbr', '.cbz'):
+        if split[1].lower() in ('.cbr', '.cbz', '.rar', '.zip'):
             colorize_cbr(args.path, sketcher, colorizer, args.autohint, args.sigma, device = device)
         elif split[1].lower() in ('.jpg', '.png'):
             new_image_path = split[0] + '_colorized' + split[1]

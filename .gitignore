@@ -2,3 +2,4 @@
 *.pth
 
 __pycache__/
+temp_colorization/

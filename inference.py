@@ -11,6 +11,7 @@ from model.models import Colorizer, Generator
 from model.extractor import get_seresnext_extractor
 from utils.xdog import XDoGSketcher
 from utils.utils import open_json
+import sys
 
 def colorize_without_hint(inp, colorizer, device = 'cpu', auto_hint = False, auto_hint_sigma = 0.003):
     i_hint = torch.zeros(1, 4, inp.shape[2], inp.shape[3]).float().to(device)
@@ -53,21 +54,18 @@ def colorize_single_image(file_path, save_path, sketcher, colorizer, auto_hint, 
         colorization = process_image(image, sketcher, colorizer, auto_hint, auto_hint_sigma, dfm, device)
 
         plt.imsave(save_path, colorization)
+    except KeyboardInterrupt:
+        sys.exit(0)
     except:
-        print('Failed to colorize {}'.format(image_name))
+        print('Failed to colorize {}'.format(file_path))
 
 def colorize_images(source_path, target_path, sketcher, colorizer, auto_hint, auto_hint_sigma = 0.003, dfm = True, device = 'cpu'):
     images = os.listdir(source_path)
     
     for image_name in images:
-        try:
-            image = plt.imread(os.path.join(source_path, image_name))
-            
-            colorization = process_image(image, sketcher, colorizer, auto_hint, auto_hint_sigma, dfm, device)
-            
-            plt.imsave(os.path.join(target_path, image_name), colorization)
-        except:
-            print('Failed to colorize {}'.format(image_name))
+        file_path = os.path.join(source_path, image_name)
+        save_path = os.path.join(target_path, image_name)
+        colorize_single_image(file_path, save_path, sketcher, colorizer, auto_hint, auto_hint_sigma, dfm, device)
             
 def colorize_cbr(file_path, sketcher, colorizer, auto_hint, auto_hint_sigma = 0.003, dfm = True, device = 'cpu'):
     file_name = os.path.splitext(os.path.basename(file_path))[0]
@@ -85,6 +83,8 @@ def colorize_cbr(file_path, sketcher, colorizer, auto_hint, auto_hint_sigma = 0.
             colorization = process_image(image, sketcher, colorizer, auto_hint, auto_hint_sigma, dfm, device)
             
             plt.imsave(image_path, colorization)
+        except KeyboardInterrupt:
+            sys.exit(0)
         except:
             print('Failed to colorize {}'.format(image_name))
     
@@ -94,20 +94,24 @@ def colorize_cbr(file_path, sketcher, colorizer, auto_hint, auto_hint_sigma = 0.
     
     remove_folder(temp_path)
     
-
-parser = argparse.ArgumentParser()
-parser.add_argument("-p", "--path", required=True)
-parser.add_argument("-gen", "--generator", default = 'model/biggan.pth')
-parser.add_argument("-ext", "--extractor", default = 'model/extractor.pth')
-parser.add_argument("-s", "--sigma", type = float, default = 0.003)
-parser.add_argument('-g', '--gpu', dest = 'gpu', action = 'store_true')
-parser.add_argument('-ah', '--auto', dest = 'autohint', action = 'store_true')
-parser.set_defaults(gpu = False)
-parser.set_defaults(autohint = False)
-args = parser.parse_args()
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--path", required=True)
+    parser.add_argument("-gen", "--generator", default = 'model/biggan.pth')
+    parser.add_argument("-ext", "--extractor", default = 'model/extractor.pth')
+    parser.add_argument("-s", "--sigma", type = float, default = 0.003)
+    parser.add_argument('-g', '--gpu', dest = 'gpu', action = 'store_true')
+    parser.add_argument('-ah', '--auto', dest = 'autohint', action = 'store_true')
+    parser.set_defaults(gpu = False)
+    parser.set_defaults(autohint = False)
+    args = parser.parse_args()
     
+    return args
+
     
 if __name__ == "__main__":
+    
+    args = parse_args()
     
     if args.gpu:
         device = 'cuda'

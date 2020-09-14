@@ -4,6 +4,10 @@ import numpy as np
 import scipy.stats as stats
 import cv2
 import json
+import patoolib
+import re
+from pathlib import Path
+from shutil import rmtree
 
 def weights_init(m):
     classname = m.__class__.__name__
@@ -79,3 +83,20 @@ def open_json(file):
         data = json.load(json_file)
         
     return data
+
+def extract_cbr(file, out_dir):
+    patoolib.extract_archive(file,  outdir = out_dir, verbosity = 1)
+
+def create_cbz(file_path, files):
+    patoolib.create_archive(file_path, files, verbosity = 1)
+    
+def subfolder_image_search(start_folder):
+    return [x.as_posix() for x in Path(".").rglob("*.[pPjJ][nNpP][gG]")]
+
+def remove_folder(folder_path):
+    rmtree(folder_path)
+    
+def sorted_alphanumeric(data):
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    return sorted(data, key=alphanum_key)

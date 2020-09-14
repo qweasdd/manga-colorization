@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from utils.dataset_utils import get_sketch, extract_cbr, create_cbz, sorted_alphanumeric, subfolder_image_search, remove_folder
-from utils.utils import resize_pad, generate_mask
+from utils.dataset_utils import get_sketch
+from utils.utils import resize_pad, generate_mask, extract_cbr, create_cbz, sorted_alphanumeric, subfolder_image_search, remove_folder
 from torchvision.transforms import ToTensor
 import os
 import matplotlib.pyplot as plt

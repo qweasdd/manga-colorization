@@ -6,7 +6,8 @@ from skimage.filters import threshold_otsu
 import matplotlib.pyplot as plt
 
 class XDoGSketcher:
-    def __init__(self, gamma, phi, eps, k, sigma, mult = 1):
+    
+    def __init__(self, gamma = 0.95, phi = 89.25, eps = -0.1, k = 8, sigma = 0.5, mult = 1):
         self.params = {}
         self.params['gamma'] = gamma
         self.params['phi'] = phi

@@ -3,6 +3,7 @@ import torch.nn as nn
 import numpy as np
 import scipy.stats as stats
 import cv2
+import json
 
 def weights_init(m):
     classname = m.__class__.__name__
@@ -73,3 +74,8 @@ def resize_pad(img, size = 512):
 
     return img, pad
 
+def open_json(file):
+    with open(file) as json_file:
+        data = json.load(json_file)
+        
+    return data

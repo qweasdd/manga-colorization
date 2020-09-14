@@ -10,6 +10,7 @@ import argparse
 from model.models import Colorizer, Generator
 from model.extractor import get_seresnext_extractor
 from utils.xdog import XDoGSketcher
+from utils.utils import open_json
 
 def colorize_without_hint(inp, colorizer, device = 'cpu', auto_hint = False, auto_hint_sigma = 0.003):
     i_hint = torch.zeros(1, 4, inp.shape[2], inp.shape[3]).float().to(device)
@@ -122,7 +123,11 @@ if __name__ == "__main__":
     colorizer = Colorizer(generator, extractor)
     colorizer = colorizer.eval().to(device)
     
-    sketcher = XDoGSketcher(0.95, 0.35 * 255, -0.1, 8, 0.5, mult = 7)
+    sketcher = XDoGSketcher()
+    xdog_config = open_json('utils/xdog_config.json')
+    for key in xdog_config.keys():
+        if key in sketcher.params:
+            sketcher.params[key] = xdog_config[key]
     
     if os.path.isdir(args.path):
         colorization_path = os.path.join(args.path, 'colorization')

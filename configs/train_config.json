@@ -1,0 +1,10 @@
+{
+    "generator_lr" : 1e-4,
+    "discriminator_lr" : 4e-4,
+    "epochs" : 15,
+    "lr_decrease_epoch" : 10,
+    "finetuning_generator_lr" : 1e-6,
+    "finetuning_iterations" : 3500,
+    "batch_size" : 4,
+    "number_of_mults" : 3
+}

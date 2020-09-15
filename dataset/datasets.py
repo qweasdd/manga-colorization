@@ -2,21 +2,37 @@ import torch
 import os
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
+import numpy as np
 
 class TrainDataset(torch.utils.data.Dataset):
-    def __init__(self, data_path, transform = None):
+    def __init__(self, data_path, transform = None, mults_amount = 1):
         self.data = os.listdir(os.path.join(data_path, 'color'))
         self.data_path = data_path
         self.transform = transform
+        self.mults_amount = mults_amount
         
         self.ToTensor = transforms.ToTensor()
     def __len__(self):
         return len(self.data)
     
     def __getitem__(self, idx):
-        color_img = plt.imread(os.path.join(self.data_path, 'color', self.data[idx]))
-        bw_img =  np.expand_dims(plt.imread(os.path.join(self.data_path, 'bw', self.data[idx])), 2)
-        dfm_img =  np.expand_dims(plt.imread(os.path.join(self.data_path, 'bw', 'dfm_' + self.data[idx])), 2)
+        image_name = self.data[idx]
+        
+        color_img = plt.imread(os.path.join(self.data_path, 'color', image_name))
+        
+
+        if self.mults_amount > 1:
+            mult_number = np.random.choice(range(self.mults_amount))
+            
+            bw_name = image_name[:image_name.rfind('.')] + '_' + str(mult_number) + '.png'
+            dfm_name = image_name[:image_name.rfind('.')] + '_' + str(mult_number) + '_dfm.png'
+        else:
+            bw_name = self.data[idx]
+            dfm_name = 'dfm_' + self.data[idx]
+            
+            
+        bw_img =  np.expand_dims(plt.imread(os.path.join(self.data_path, 'bw', bw_name)), 2)
+        dfm_img =  np.expand_dims(plt.imread(os.path.join(self.data_path, 'bw', dfm_name)), 2)
         
         bw_img = np.concatenate([bw_img, dfm_img], axis = 2)
         

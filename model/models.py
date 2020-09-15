@@ -341,15 +341,17 @@ class Colorizer(nn.Module):
         self.generator.load_state_dict(gen_weights)
         
     def load_extractor_weights(self, ext_weights):
-        self.extracto.load_state_dict(ext_weights)
+        self.extractor.load_state_dict(ext_weights)
         
     def extractor_eval(self):
         for param in self.extractor.parameters():
             param.requires_grad = False
+        self.extractor.eval()
             
     def extractor_train(self):
         for param in extractor.parameters():
             param.requires_grad = True
+        self.extractor.train()
             
     def forward(self, x, extractor_grad = False):
         

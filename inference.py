@@ -128,7 +128,7 @@ if __name__ == "__main__":
     colorizer = colorizer.eval().to(device)
     
     sketcher = XDoGSketcher()
-    xdog_config = open_json('utils/xdog_config.json')
+    xdog_config = open_json('configs/xdog_config.json')
     for key in xdog_config.keys():
         if key in sketcher.params:
             sketcher.params[key] = xdog_config[key]

@@ -86,7 +86,7 @@ def colorize_cbr(file_path, sketcher, colorizer, auto_hint, auto_hint_sigma = 0.
         except KeyboardInterrupt:
             sys.exit(0)
         except:
-            print('Failed to colorize {}'.format(image_name))
+            print('Failed to colorize {}'.format(image_path))
     
     result_name = os.path.join(os.path.dirname(file_path), file_name + '_colorized.cbz')
     

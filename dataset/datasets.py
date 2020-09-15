@@ -4,6 +4,9 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 import numpy as np
 
+from utils.utils import generate_mask
+
+
 class TrainDataset(torch.utils.data.Dataset):
     def __init__(self, data_path, transform = None, mults_amount = 1):
         self.data = os.listdir(os.path.join(data_path, 'color'))
@@ -51,7 +54,7 @@ class TrainDataset(torch.utils.data.Dataset):
         
         color_img = (color_img - 0.5) / 0.5
         
-        mask = generate_mask(bw_img.shape[1])
+        mask = generate_mask(bw_img.shape[1], bw_img.shape[2])
         hint = torch.cat((color_img * mask, mask), 0)
         
         return bw_img, color_img, hint, dfm_img

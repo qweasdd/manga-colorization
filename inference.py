@@ -97,7 +97,7 @@ def colorize_cbr(file_path, sketcher, colorizer, auto_hint, auto_hint_sigma = 0.
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--path", required=True)
-    parser.add_argument("-gen", "--generator", default = 'model/biggan.pth')
+    parser.add_argument("-gen", "--generator", default = 'model/generator.pth')
     parser.add_argument("-ext", "--extractor", default = 'model/extractor.pth')
     parser.add_argument("-s", "--sigma", type = float, default = 0.003)
     parser.add_argument('-g', '--gpu', dest = 'gpu', action = 'store_true')

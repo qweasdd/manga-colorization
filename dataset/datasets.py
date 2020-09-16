@@ -61,8 +61,8 @@ class TrainDataset(torch.utils.data.Dataset):
     
 class FineTuningDataset(torch.utils.data.Dataset):
     def __init__(self, data_path, transform = None):
-        self.data = [x for x in os.listdir(os.path.join(data_path, 'real_manga')) if x.find('dfm_') == -1] * 8
-        self.color_data = [x for x in os.listdir(os.path.join(data_path, 'color')) if x.find('left') == -1 and x.find('right') == -1] * 6
+        self.data = [x for x in os.listdir(os.path.join(data_path, 'real_manga')) if x.find('dfm_') == -1] 
+        self.color_data = [x for x in os.listdir(os.path.join(data_path, 'color'))] * 100
         self.data_path = data_path
         self.transform = transform
         

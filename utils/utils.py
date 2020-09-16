@@ -24,7 +24,7 @@ def generate_mask(height, width, mu = 1, sigma = 0.0005, prob = 0.5, full = True
 
     if full:
         if (np.random.binomial(1, p = full_prob) == 1):
-            return torch.ones(1, maskS, maskS).float() 
+            return torch.ones(1, height, width).float() 
         
     if np.random.binomial(1, p = prob) == 1:
         mask = torch.rand(1, height, width).ge(X.rvs(1)[0]).float() 

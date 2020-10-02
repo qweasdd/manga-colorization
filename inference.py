@@ -12,19 +12,20 @@ from model.extractor import get_seresnext_extractor
 from utils.xdog import XDoGSketcher
 from utils.utils import open_json
 import sys
+from denoising.denoiser import FFDNetDenoiser
 
-def colorize_without_hint(inp, colorizer, device = 'cpu', auto_hint = False, auto_hint_sigma = 0.003, ignore_gray = False):
-    i_hint = torch.zeros(1, 4, inp.shape[2], inp.shape[3]).float().to(device)
+def colorize_without_hint(inp, color_args):
+    i_hint = torch.zeros(1, 4, inp.shape[2], inp.shape[3]).float().to(color_args['device'])
     
     with torch.no_grad():
-        fake_color, _ = colorizer(torch.cat([inp, i_hint], 1))
+        fake_color, _ = color_args['colorizer'](torch.cat([inp, i_hint], 1))
     
-    if auto_hint:
-        mask = generate_mask(fake_color.shape[2], fake_color.shape[3], full = False, prob = 1, sigma = auto_hint_sigma).unsqueeze(0)
-        mask = mask.to(device)
+    if color_args['auto_hint']:
+        mask = generate_mask(fake_color.shape[2], fake_color.shape[3], full = False, prob = 1, sigma = color_args['auto_hint_sigma']).unsqueeze(0)
+        mask = mask.to(color_args['device'])
         
         
-        if ignore_gray:
+        if color_args['ignore_gray']:
             diff1 = torch.abs(fake_color[:, 0] - fake_color[:, 1])
             diff2 = torch.abs(fake_color[:, 0] - fake_color[:, 2])
             diff3 = torch.abs(fake_color[:, 1] - fake_color[:, 2])
@@ -34,19 +35,23 @@ def colorize_without_hint(inp, colorizer, device = 'cpu', auto_hint = False, aut
         i_hint = torch.cat([fake_color * mask, mask], 1)
         
         with torch.no_grad():
-            fake_color, _ = colorizer(torch.cat([inp, i_hint], 1))
+            fake_color, _ = color_args['colorizer'](torch.cat([inp, i_hint], 1))
         
     return fake_color
 
 
-def process_image(image, sketcher, colorizer, auto_hint, auto_hint_sigma = 0.003, ignore_gray = False, dfm = True, device = 'cpu', to_tensor = ToTensor()):
+def process_image(image, color_args, to_tensor = ToTensor()):
     image, pad = resize_pad(image)
-    bw, dfm = get_sketch(image, sketcher, dfm)
     
-    bw = to_tensor(bw).unsqueeze(0).to(device)
-    dfm = to_tensor(dfm).unsqueeze(0).to(device)
+    if color_args['denoiser'] is not None:
+        image = color_args['denoiser'].get_denoised_image(image)
     
-    output = colorize_without_hint(torch.cat([bw, dfm], 1), colorizer, device = device, auto_hint = auto_hint, ignore_gray = ignore_gray)
+    bw, dfm = get_sketch(image, color_args['sketcher'], color_args['dfm'])
+    
+    bw = to_tensor(bw).unsqueeze(0).to(color_args['device'])
+    dfm = to_tensor(dfm).unsqueeze(0).to(color_args['device'])
+    
+    output = colorize_without_hint(torch.cat([bw, dfm], 1), color_args)
     result = output[0].cpu().permute(1, 2, 0).numpy() * 0.5 + 0.5
     
     if pad[0] != 0:
@@ -56,11 +61,11 @@ def process_image(image, sketcher, colorizer, auto_hint, auto_hint_sigma = 0.003
         
     return result
 
-def colorize_single_image(file_path, save_path, sketcher, colorizer, auto_hint, auto_hint_sigma = 0.003, ignore_gray = False, dfm = True, device = 'cpu'):
+def colorize_single_image(file_path, save_path, color_args):
     try:
         image = plt.imread(file_path)
 
-        colorization = process_image(image, sketcher, colorizer, auto_hint, auto_hint_sigma, ignore_gray, dfm, device)
+        colorization = process_image(image, color_args)
 
         plt.imsave(save_path, colorization)
     except KeyboardInterrupt:
@@ -68,15 +73,20 @@ def colorize_single_image(file_path, save_path, sketcher, colorizer, auto_hint, 
     except:
        print('Failed to colorize {}'.format(file_path))
 
-def colorize_images(source_path, target_path, sketcher, colorizer, auto_hint, auto_hint_sigma = 0.003, ignore_gray = False, dfm = True, device = 'cpu'):
+def colorize_images(source_path, target_path, color_args):
     images = os.listdir(source_path)
     
     for image_name in images:
         file_path = os.path.join(source_path, image_name)
+        
+        name, ext = os.path.splitext(image_name)
+        if (ext != '.png'):
+            image_name = name + '.png'
+        
         save_path = os.path.join(target_path, image_name)
-        colorize_single_image(file_path, save_path, sketcher, colorizer, auto_hint, auto_hint_sigma, ignore_gray, dfm, device)
+        colorize_single_image(file_path, save_path, color_args)
             
-def colorize_cbr(file_path, sketcher, colorizer, auto_hint, auto_hint_sigma = 0.003, ignore_gray = False, dfm = True, device = 'cpu'):
+def colorize_cbr(file_path, color_args):
     file_name = os.path.splitext(os.path.basename(file_path))[0]
     temp_path = 'temp_colorization'
     
@@ -85,21 +95,21 @@ def colorize_cbr(file_path, sketcher, colorizer, auto_hint, auto_hint_sigma = 0.
     extract_cbr(file_path, temp_path)
     
     images = subfolder_image_search(temp_path)
+    
+    result_images = []
     for image_path in images:
-        try:
-            image = plt.imread(image_path)
-            
-            colorization = process_image(image, sketcher, colorizer, auto_hint, auto_hint_sigma, ignore_gray, dfm, device)
-            
-            plt.imsave(image_path, colorization)
-        except KeyboardInterrupt:
-            sys.exit(0)
-        except:
-            print('Failed to colorize {}'.format(image_path))
+        save_path = image_path
+        
+        path, ext = os.path.splitext(save_path)
+        if (ext != '.png'):
+            save_path = path + '.png'
+        
+        colorize_single_image(image_path, save_path, color_args)
+        result_images.append(save_path)
     
     result_name = os.path.join(os.path.dirname(file_path), file_name + '_colorized.cbz')
     
-    create_cbz(result_name, images)
+    create_cbz(result_name, result_images)
     
     remove_folder(temp_path)
     
@@ -112,9 +122,12 @@ def parse_args():
     parser.add_argument('-g', '--gpu', dest = 'gpu', action = 'store_true')
     parser.add_argument('-ah', '--auto', dest = 'autohint', action = 'store_true')
     parser.add_argument('-ig', '--ignore_grey', dest = 'ignore', action = 'store_true')
+    parser.add_argument('-nd', '--no_denoise', dest = 'denoiser', action = 'store_false')
+    parser.add_argument("-ds", "--denoiser_sigma", type = int, default = 25)
     parser.set_defaults(gpu = False)
     parser.set_defaults(autohint = False)
     parser.set_defaults(ignore = False)
+    parser.set_defaults(denoiser = True)
     args = parser.parse_args()
     
     return args
@@ -143,21 +156,32 @@ if __name__ == "__main__":
     for key in xdog_config.keys():
         if key in sketcher.params:
             sketcher.params[key] = xdog_config[key]
+
+    denoiser = None
+    if args.denoiser:
+        denoiser = FFDNetDenoiser(device, args.denoiser_sigma)
+    
+    color_args = {'colorizer':colorizer, 'sketcher':sketcher, 'auto_hint':args.autohint, 'auto_hint_sigma':args.autohint,\
+                 'ignore_gray':args.ignore, 'device':device, 'dfm' : True, 'denoiser':denoiser}
+    
     
     if os.path.isdir(args.path):
         colorization_path = os.path.join(args.path, 'colorization')
         if not os.path.exists(colorization_path):
             os.makedirs(colorization_path)
             
-        colorize_images(args.path, colorization_path, sketcher, colorizer, args.autohint, args.sigma, ignore_gray = args.ignore, device = device)
+        colorize_images(args.path, colorization_path, color_args)
+        
     elif os.path.isfile(args.path):
+        
         split = os.path.splitext(args.path)
+        
         if split[1].lower() in ('.cbr', '.cbz', '.rar', '.zip'):
-            colorize_cbr(args.path, sketcher, colorizer, args.autohint, args.sigma, ignore_gray = args.ignore, device = device)
-        elif split[1].lower() in ('.jpg', '.png'):
+            colorize_cbr(args.path, color_args)
+        elif split[1].lower() in ('.jpg', '.png', ',jpeg'):
             new_image_path = split[0] + '_colorized' + split[1]
             
-            colorize_single_image(args.path, new_image_path, sketcher, colorizer, args.autohint, args.sigma, ignore_gray = args.ignore, device = device)
+            colorize_single_image(args.path, new_image_path, color_args)
         else:
             print('Wrong format')
     else:

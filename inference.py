@@ -68,10 +68,13 @@ def colorize_single_image(file_path, save_path, color_args):
         colorization = process_image(image, color_args)
 
         plt.imsave(save_path, colorization)
+        
+        return True
     except KeyboardInterrupt:
         sys.exit(0)
     except:
        print('Failed to colorize {}'.format(file_path))
+       return False
 
 def colorize_images(source_path, target_path, color_args):
     images = os.listdir(source_path)
@@ -104,8 +107,10 @@ def colorize_cbr(file_path, color_args):
         if (ext != '.png'):
             save_path = path + '.png'
         
-        colorize_single_image(image_path, save_path, color_args)
-        result_images.append(save_path)
+        res_flag = colorize_single_image(image_path, save_path, color_args)
+        
+        result_images.append(save_path if res_flag else image_path)
+        
     
     result_name = os.path.join(os.path.dirname(file_path), file_name + '_colorized.cbz')
     
@@ -161,7 +166,7 @@ if __name__ == "__main__":
     if args.denoiser:
         denoiser = FFDNetDenoiser(device, args.denoiser_sigma)
     
-    color_args = {'colorizer':colorizer, 'sketcher':sketcher, 'auto_hint':args.autohint, 'auto_hint_sigma':args.autohint,\
+    color_args = {'colorizer':colorizer, 'sketcher':sketcher, 'auto_hint':args.autohint, 'auto_hint_sigma':args.sigma,\
                  'ignore_gray':args.ignore, 'device':device, 'dfm' : True, 'denoiser':denoiser}
     
     
@@ -179,7 +184,7 @@ if __name__ == "__main__":
         if split[1].lower() in ('.cbr', '.cbz', '.rar', '.zip'):
             colorize_cbr(args.path, color_args)
         elif split[1].lower() in ('.jpg', '.png', ',jpeg'):
-            new_image_path = split[0] + '_colorized' + split[1]
+            new_image_path = split[0] + '_colorized' + '.png'
             
             colorize_single_image(args.path, new_image_path, color_args)
         else:

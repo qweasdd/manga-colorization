@@ -85,13 +85,13 @@ def open_json(file):
     return data
 
 def extract_cbr(file, out_dir):
-    patoolib.extract_archive(file,  outdir = out_dir, verbosity = 1)
+    patoolib.extract_archive(file,  outdir = out_dir, verbosity = 1, interactive = False)
 
 def create_cbz(file_path, files):
-    patoolib.create_archive(file_path, files, verbosity = 1)
+    patoolib.create_archive(file_path, files, verbosity = 1, interactive = False)
     
 def subfolder_image_search(start_folder):
-    return [x.as_posix() for x in Path(".").rglob("*.[pPjJ][nNpP][gG]")]
+    return [x.as_posix() for x in Path(start_folder).rglob("*.[pPjJ][nNpP][gG]")]
 
 def remove_folder(folder_path):
     rmtree(folder_path)

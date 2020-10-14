@@ -44,7 +44,7 @@ def process_image(image, color_args, to_tensor = ToTensor()):
     image, pad = resize_pad(image)
     
     if color_args['denoiser'] is not None:
-        image = color_args['denoiser'].get_denoised_image(image)
+        image = color_args['denoiser'].get_denoised_image(image, color_args['denoiser_sigma'])
     
     bw, dfm = get_sketch(image, color_args['sketcher'], color_args['dfm'])
     
@@ -73,8 +73,8 @@ def colorize_single_image(file_path, save_path, color_args):
     except KeyboardInterrupt:
         sys.exit(0)
     except:
-       print('Failed to colorize {}'.format(file_path))
-       return False
+        print('Failed to colorize {}'.format(file_path))
+        return False
 
 def colorize_images(source_path, target_path, color_args):
     images = os.listdir(source_path)
@@ -117,6 +117,8 @@ def colorize_cbr(file_path, color_args):
     create_cbz(result_name, result_images)
     
     remove_folder(temp_path)
+    
+    return result_name
     
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -167,7 +169,7 @@ if __name__ == "__main__":
         denoiser = FFDNetDenoiser(device, args.denoiser_sigma)
     
     color_args = {'colorizer':colorizer, 'sketcher':sketcher, 'auto_hint':args.autohint, 'auto_hint_sigma':args.sigma,\
-                 'ignore_gray':args.ignore, 'device':device, 'dfm' : True, 'denoiser':denoiser}
+                 'ignore_gray':args.ignore, 'device':device, 'dfm' : True, 'denoiser':denoiser, 'denoiser_sigma' : args.denoiser_sigma}
     
     
     if os.path.isdir(args.path):

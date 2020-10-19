@@ -61,6 +61,25 @@ def process_image(image, color_args, to_tensor = ToTensor()):
         
     return result
 
+def colorize_with_hint(inp, color_args):
+    with torch.no_grad():
+        fake_color, _ = color_args['colorizer'](inp)
+        
+    return fake_color
+    
+def process_image_with_hint(bw, dfm, hint, color_args, to_tensor = ToTensor()):
+    bw = to_tensor(bw).unsqueeze(0).to(color_args['device'])
+    dfm = to_tensor(dfm).unsqueeze(0).to(color_args['device'])
+    
+    i_hint = (torch.FloatTensor(hint[..., :3]).permute(2, 0, 1) - 0.5) / 0.5
+    mask = torch.FloatTensor(hint[..., 3:]).permute(2, 0, 1)
+    i_hint = torch.cat([i_hint * mask, mask], 0).unsqueeze(0).to(color_args['device'])
+    
+    output = colorize_with_hint(torch.cat([bw, dfm, i_hint], 1), color_args)
+    result = output[0].cpu().permute(1, 2, 0).numpy() * 0.5 + 0.5
+    
+    return result
+    
 def colorize_single_image(file_path, save_path, color_args):
     try:
         image = plt.imread(file_path)

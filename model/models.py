@@ -283,7 +283,7 @@ class Generator(nn.Module):
         x0 = self.to0(sketch)
         x1 = self.to1(x0)
         x2 = self.to2(x1)
-        x3 = self.to3(x2)  # !
+        x3 = self.to3(x2)  
         x4 = self.to4(x3)
 
         sketch_feat = self.feature_conv(sketch_feat)

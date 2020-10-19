@@ -53,7 +53,7 @@ class FFDNetDenoiser:
         else:
             cur_sigma = self.sigma 
     
-        if len(imorig) < 3 or imorig.shape[2] == 1:
+        if len(imorig.shape) < 3 or imorig.shape[2] == 1:
             imorig = np.repeat(np.expand_dims(imorig, 2), 3, 2)
 
         if (max(imorig.shape[0], imorig.shape[1]) > 1200):

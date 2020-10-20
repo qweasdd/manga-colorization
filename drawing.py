@@ -34,19 +34,19 @@ def generate_unique_id(current_ids = set()):
         
     return id_t
 
+app = Flask(__name__)
+app.config.update(dict(
+    SECRET_KEY="lol kek",
+    WTF_CSRF_SECRET_KEY="cheburek"
+))
+
 if torch.cuda.is_available():
     device = 'cuda'
 else:
-    device = 'cpu'
-    
-generator = Generator()
-generator.load_state_dict(torch.load('model/generator.pth'))
+    device = 'cpu'  
 
-extractor = get_seresnext_extractor()
-extractor.load_state_dict(torch.load('model/extractor.pth'))
-
-colorizer = Colorizer(generator, extractor)
-colorizer = colorizer.eval().to(device)
+colorizer = torch.jit.load('./model/colorizer.zip')
+colorizer = colorizer.to(device)
 
 sketcher = XDoGSketcher()
 xdog_config = open_json('configs/xdog_config.json')
@@ -58,11 +58,6 @@ denoiser = FFDNetDenoiser(device)
 
 color_args = {'colorizer':colorizer, 'sketcher':sketcher, 'device':device, 'dfm' : True, 'auto_hint' : False, 'ignore_gray' : False, 'denoiser' : denoiser, 'denoiser_sigma' : 25}
 
-app = Flask(__name__)
-app.config.update(dict(
-    SECRET_KEY="lol kek",
-    WTF_CSRF_SECRET_KEY="cheburek"
-))
 
 class SubmitForm(FlaskForm):
     file = FileField(validators=[DataRequired()])

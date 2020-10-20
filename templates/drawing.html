@@ -16,7 +16,7 @@
        #draw_canvas {
         height: 200%;
         border: 3px solid black;
-        background-image: url(../static/{{img_path}}); 
+        background-image: linear-gradient(rgba(60,60,60,.85), rgba(60,60,60,.85)), url(../static/{{img_path}}); 
         background-color: #c7b39b; 
         background-size: 100%;
        }
@@ -24,9 +24,16 @@
 
 </head>
 <body>
-<input type="button" onclick="location.href='/';" value="Home" />
+
+<div align="left" style ="margin : 5px; margin-left : 0px">
+    <input type="button" onclick="location.href='/';" value="Home" />
+    </div>
 
 Left click - colorize, right hold - remove with rectangle, left click on result - use corresponding color.
+
+
+<hr>
+
 <p><table>
             <tr>
             <td>

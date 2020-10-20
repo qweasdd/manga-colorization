@@ -37,7 +37,7 @@ class FFDNetDenoiser:
         weights_name = 'net_rgb.pth' if self.channels == 3 else 'net_gray.pth'
         weights_path = os.path.join(self.weights_dir, weights_name)
         if self.device == 'cuda':
-            state_dict = torch.load(weights_path)
+            state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
             device_ids = [0]
             self.model = nn.DataParallel(self.model, device_ids=device_ids).cuda()
         else:

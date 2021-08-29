@@ -1,2 +1,6 @@
 *.ipynb
+
+model/*.pth
+
 temp_colorization/
+__pycache__/

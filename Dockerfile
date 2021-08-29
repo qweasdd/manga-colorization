@@ -8,4 +8,4 @@ RUN pip install --no-cache-dir -r ./requirements.txt
 
 EXPOSE 5000
 
-CMD gunicorn --timeout 150 -w 1 -b 0.0.0.0:5000 drawing:app
+CMD gunicorn --timeout 200 -w 3 -b 0.0.0.0:5000 drawing:app

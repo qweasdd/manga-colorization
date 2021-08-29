@@ -3,15 +3,15 @@ from datetime import datetime
 import base64
 import random
 import string
-
-import matplotlib.pyplot as plt
+import shutil
 import torch
+import matplotlib.pyplot as plt
+import numpy as np
 from flask import Flask, request, jsonify, abort, redirect, url_for, render_template, send_file, Response
 from flask_wtf import FlaskForm
 from wtforms import StringField, FileField, BooleanField, DecimalField
 from wtforms.validators import DataRequired
 from flask import after_this_request
-
 
 from model.models import Colorizer, Generator
 from model.extractor import get_seresnext_extractor
@@ -45,8 +45,7 @@ if torch.cuda.is_available():
 else:
     device = 'cpu'  
 
-colorizer = torch.jit.load('./model/colorizer.zip')
-colorizer = colorizer.to(device)
+colorizer = torch.jit.load('./model/colorizer.zip', map_location=torch.device(device))
 
 sketcher = XDoGSketcher()
 xdog_config = open_json('configs/xdog_config.json')
@@ -60,7 +59,7 @@ color_args = {'colorizer':colorizer, 'sketcher':sketcher, 'device':device, 'dfm'
 
 
 class SubmitForm(FlaskForm):
-    file = FileField(validators=[DataRequired()])
+    file = FileField(validators=[DataRequired(), ])
 
 def preprocess_image(file_id, ext): 
     directory_path = os.path.join('static', 'temp_images', file_id)
@@ -76,7 +75,10 @@ def preprocess_image(file_id, ext):
     plt.imsave(os.path.join(directory_path, 'bw.png'), bw, cmap = 'gray')
     plt.imsave(os.path.join(directory_path, 'dfm.png'), dfm, cmap = 'gray')
     os.remove(original_path)
-    
+  
+    empty_hint = np.zeros((resized_image.shape[0], resized_image.shape[1], 4), dtype = np.float32)
+    plt.imsave(os.path.join(directory_path, 'hint.png'), empty_hint)
+
 @app.route('/', methods=['GET', 'POST'])
 def upload():
     form = SubmitForm()
@@ -86,23 +88,33 @@ def upload():
         _, ext = os.path.splitext(input_data.filename)
         
         if ext not in ('.jpg', '.png', 'jpeg'):
-            return 'Wrong format'
+            return abort(400)
         
         file_id = generate_unique_id()
         directory = os.path.join('static', 'temp_images', file_id)
         original_filename =  os.path.join(directory, 'original') + ext
         
-        os.mkdir(directory)
-        input_data.save(original_filename)
+        try :
+            os.mkdir(directory)
+            input_data.save(original_filename)
         
-        preprocess_image(file_id, ext)
+            preprocess_image(file_id, ext)
         
-        return redirect(f'/draw/{file_id}')
+            return redirect(f'/draw/{file_id}')
+        
+        except :
+            print('Failed to colorize')
+            if os.path.exists(directory):
+                shutil.rmtree(directory)
+            return abort(400)
+                
         
     return render_template("upload.html", form = form)
 
 @app.route('/img/<file_id>')
 def show_image(file_id):
+    if not os.path.exists(os.path.join('static', 'temp_images', str(file_id))):
+        abort(404)
     return f'<img src="/static/temp_images/{file_id}/colorized.png?{random. randint(1,1000000)}">'
 
 def colorize_image(file_id):
@@ -141,6 +153,9 @@ def paintapp(file_id):
     if request.method == 'GET':
         
         directory_path = os.path.join('static', 'temp_images', str(file_id))
+        if not os.path.exists(directory_path):
+            abort(404)
+        
         resized_name = [x for x in os.listdir(directory_path) if x.startswith('resized_')][0]
         
         split = os.path.splitext(resized_name)[0].split('_')

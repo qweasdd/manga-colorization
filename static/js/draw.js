@@ -10,6 +10,38 @@ result_canvas.width = canvas.width;
 result_canvas.height = canvas.height;
 
 var color_indicator = document.getElementById('color');
+ctx.fillStyle = 'black';
+color_indicator.value = '#000000';
+
+var cur_id = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1);
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
+}
+
+var init_hint = new Image();  
+init_hint.addEventListener('load', function() {
+      ctx.drawImage(init_hint, 0, 0);
+});
+init_hint.src =  '../static/temp_images/' + cur_id + '/hint.png?' + getRandomInt(100000).toString();
+
+result_canvas.addEventListener('load', function(e) {
+    var img = new Image();   
+    img.addEventListener('load', function() {
+      ctx.drawImage(img, 0, 0);
+    }, false);
+    console.log(window.location.pathname);
+})
+
+
+canvas.onload = function (e) {
+    var img = new Image();   
+    img.addEventListener('load', function() {
+      ctx.drawImage(img, 0, 0);
+    }, false);
+    console.log(window.location.pathname);
+   //img.src = ;
+}
 
 function reset() {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);

@@ -24,15 +24,14 @@
 
 </head>
 <body>
-
 <div align="left" style ="margin : 5px; margin-left : 0px">
     <input type="button" onclick="location.href='/';" value="Home" />
     </div>
-
+<p style="margin: 0; padding: 0">
 Left click - colorize, right hold - remove with rectangle, left click on result - use corresponding color.
 
-
-<hr>
+</p>
+<hr style ="margin: 0; padding: 0">
 
 <p><table>
             <tr>
@@ -129,7 +128,7 @@ Left click - colorize, right hold - remove with rectangle, left click on result 
                 <td><button style="background-color: #848484; height: 20px; width: 20px;" onclick="color('#848484')"></button>
 </tr> 
             <tr>                 
-<td><button style="background-color: #F4F4F4; height: 20px; width: 20px;" onclick="color('#F4F4F4')"></button>
+<td><button style="background-color: #FFFFFF; height: 20px; width: 20px;" onclick="color('#FFFFFF')"></button>
                 <td><button style="background-color: #EE0000; height: 20px; width: 20px;" onclick="color('#EE0000')"></button>
 </tr> 
             <tr>                
@@ -186,7 +185,7 @@ Left click - colorize, right hold - remove with rectangle, left click on result 
             </table>
             </td>
             <td>
-              <div style="width: 1250px; height: 800px; overflow: auto"><canvas id="draw_canvas"  width="{{width}}" height="{{height}}"></canvas></div>
+              <div style="width: 1150px; height: 800px; overflow: auto"><canvas align = "center" id="draw_canvas"  width="{{width}}" height="{{height}}"></canvas></div>
             </td>
             <td>
 		<canvas id='result'></canvas>

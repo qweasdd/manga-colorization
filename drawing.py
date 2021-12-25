@@ -87,7 +87,7 @@ def upload():
         
         _, ext = os.path.splitext(input_data.filename)
         
-        if ext not in ('.jpg', '.png', 'jpeg'):
+        if ext not in ('.jpg', '.png', '.jpeg'):
             return abort(400)
         
         file_id = generate_unique_id()

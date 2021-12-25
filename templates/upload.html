@@ -1,0 +1,20 @@
+<style>
+form{
+   position:fixed;
+   top:50%;
+   left:45%;
+   width:1250px;
+}
+</style>
+
+
+<form id="form" method="POST" action="/" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    {{ form.file(size=20) }}
+</form>
+
+<script>
+document.getElementById("file").onchange = function() {
+    document.getElementById("form").submit();
+};
+</script>

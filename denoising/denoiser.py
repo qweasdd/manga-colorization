@@ -37,7 +37,7 @@ class FFDNetDenoiser:
         weights_name = 'net_rgb.pth' if self.channels == 3 else 'net_gray.pth'
         weights_path = os.path.join(self.weights_dir, weights_name)
         if self.device == 'cuda':
-            state_dict = torch.load(weights_path)
+            state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
             device_ids = [0]
             self.model = nn.DataParallel(self.model, device_ids=device_ids).cuda()
         else:
@@ -53,7 +53,7 @@ class FFDNetDenoiser:
         else:
             cur_sigma = self.sigma 
     
-        if len(imorig) < 3 or imorig.shape[2] == 1:
+        if len(imorig.shape) < 3 or imorig.shape[2] == 1:
             imorig = np.repeat(np.expand_dims(imorig, 2), 3, 2)
 
         if (max(imorig.shape[0], imorig.shape[1]) > 1200):

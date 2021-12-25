@@ -5,4 +5,6 @@
 __pycache__/
 temp_colorization/
 
-static/temp_images/
+static/temp_images/*
+
+!.gitkeep
